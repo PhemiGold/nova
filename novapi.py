@@ -78,8 +78,36 @@ async def chat_endpoint(request: ChatRequest):
     except Exception as e:
         logger.error(f"Error processing chat for user {request.user_id}: {e}")
         raise HTTPException(status_code=500, detail=f"Error processing chat: {str(e)}")
+# lets try something here
+@app.get("/c")
+async def chat_endpoint(
+    user_id: str = Query(...),
+    query: str = Query(...),
+    include_web: bool = Query(False)
+):
+        try:
+        # User-specific directory
+        data_directory = f"./data/{user_id}"
+        os.makedirs(data_directory, exist_ok=True)
 
+        # Initialize SpaceAI instance
+        space_ai = SpaceAI(
+            data_directory=data_directory,
+            query=query,
+            user_id=user_id,
+            include_web=include_web
+        )
+        
+        # Handle the user query
+        response, urls = await space_ai.handle_user_message()
 
+        logger.info(f"User {user_id} query: {query}")
+        logger.info(f"Response: {response}")
+        return {"response": response, "urls": urls}
+    except Exception as e:
+        logger.error(f"Error processing c for user {user_id}: {e}")
+        raise HTTPException(status_code=500, detail=f"Error processing chat: {str(e)}")
+        
 # class ClearRequest(BaseModel):
 #     user_id: str
 
